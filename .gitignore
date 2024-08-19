@@ -1,0 +1,29 @@
+# Python virtual environment
+rag_chatbot_env/
+venv/
+env/
+*.pyc
+__pycache__/
+
+# Environment variables
+.env
+
+# Vercel
+.vercel
+
+# Chroma database files (if you don't want to version these)
+chroma_db/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
