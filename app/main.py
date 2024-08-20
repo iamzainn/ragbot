@@ -10,12 +10,13 @@ embedding_service = EmbeddingService()
 rag_service = RAGService()
 
 @app.post("/create_embeddings")
-async def create_embeddings(request: EmbeddingRequest, api_key: str = Depends(get_api_key)):
+async def create_embeddings(request: EmbeddingRequest):
     try:
         result = embedding_service.create_embeddings(
             request.userId,
             request.documentId,
-            request.text
+            request.documentUrl,
+            request.documentType
         )
         return result
     except Exception as e:
@@ -39,6 +40,14 @@ async def delete_embeddings(request: DeleteEmbeddingRequest, api_key: str = Depe
             request.userId,
             request.documentId
         )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/deleteAll")
+async def delete_all_embeddings():
+    try:
+        result = embedding_service.delete_all_embeddings()
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
