@@ -23,7 +23,7 @@ async def create_embeddings(request: EmbeddingRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/get_response")
-async def get_response(request: QuestionRequest, api_key: str = Depends(get_api_key)):
+async def get_response(request: QuestionRequest):
     try:
         response = rag_service.get_response(
             request.userId,
@@ -34,7 +34,7 @@ async def get_response(request: QuestionRequest, api_key: str = Depends(get_api_
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/delete_embeddings")
-async def delete_embeddings(request: DeleteEmbeddingRequest, api_key: str = Depends(get_api_key)):
+async def delete_embeddings(request: DeleteEmbeddingRequest):
     try:
         result = embedding_service.delete_embeddings(
             request.userId,

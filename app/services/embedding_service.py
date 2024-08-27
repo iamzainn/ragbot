@@ -1,4 +1,3 @@
-import re
 import requests
 from PyPDF2 import PdfReader
 from docx import Document
@@ -14,14 +13,7 @@ class EmbeddingService:
         self.embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         self.vectorstore = Chroma(persist_directory=Config.CHROMA_PERSIST_DIRECTORY, embedding_function=self.embeddings)
-    
-    def preprocess_text(self, text):
-        # Remove unnecessary parts using regex, such as numbers, special characters
-        # Adjust the pattern as needed
-        pattern = r'\b\w+\b'
-        important_text = ' '.join(re.findall(pattern, text))
-        return important_text
-    
+
     def fetch_document_text(self, document_url: str, document_type: str):
         response = requests.get(document_url)
         response.raise_for_status()
@@ -50,8 +42,9 @@ class EmbeddingService:
     def create_embeddings(self, user_id: str, document_id: str, document_url: str, document_type: str):
         try:
             text = self.fetch_document_text(document_url, document_type)
-            processed_text = self.preprocess_text(text)
-            chunks = self.text_splitter.split_text(processed_text)
+            
+            chunks = self.text_splitter.split_text(text)
+           
             metadatas = [{"user_id": user_id, "document_id": document_id} for _ in chunks]
             self.vectorstore.add_texts(texts=chunks, metadatas=metadatas)
             return {"message": "Embeddings created successfully"}
@@ -67,22 +60,22 @@ class EmbeddingService:
         }
 
         results = self.vectorstore.get(where=where_clause)
-        
+
         if not results['ids']:
             return {"message": "No matching embeddings found to delete"}
-        
+
         self.vectorstore.delete(ids=results['ids'])
-        
+
         return {"message": f"Deleted {len(results['ids'])} embeddings"}
 
     def delete_all_embeddings(self):
         # Retrieve all embeddings
         results = self.vectorstore.get(where={})
-    
+
         if not results['ids']:
             return {"message": "No embeddings found to delete"}
 
         # Delete all embeddings by IDs
         self.vectorstore.delete(ids=results['ids'])
-    
+
         return {"message": f"Deleted {len(results['ids'])} embeddings"}

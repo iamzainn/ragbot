@@ -9,7 +9,8 @@ class RAGService:
         self.embedding_service = EmbeddingService()
         self.llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0)
         self.retriever = self.embedding_service.vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 10})
-
+        print("RAG service initialized")
+        print(self.retriever)
     def get_response(self, user_id: str, question: str):
         system_prompt = (
             "You are an assistant for question-answering tasks. "
