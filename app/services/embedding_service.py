@@ -13,6 +13,17 @@ class EmbeddingService:
         self.embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         self.vectorstore = Chroma(persist_directory=Config.CHROMA_PERSIST_DIRECTORY, embedding_function=self.embeddings)
+        self.conversation_history = {}
+        
+    def add_to_history(self, user_id: str, question: str, answer: str):
+        if user_id not in self.conversation_history:
+            self.conversation_history[user_id] = []
+        self.conversation_history[user_id].append({"question": question, "answer": answer})
+        # Keep only the last 5 exchanges
+        self.conversation_history[user_id] = self.conversation_history[user_id][-5:]
+
+    def get_history(self, user_id: str):
+        return self.conversation_history.get(user_id, [])    
 
     def fetch_document_text(self, document_url: str, document_type: str):
         response = requests.get(document_url)

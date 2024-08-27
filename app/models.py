@@ -9,6 +9,7 @@ class EmbeddingRequest(BaseModel):
 class QuestionRequest(BaseModel):
     userId: str
     question: str
+    sessionId: str = None
 
 class DeleteEmbeddingRequest(BaseModel):
     userId: str
