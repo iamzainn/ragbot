@@ -5,25 +5,27 @@ from langchain_core.prompts import ChatPromptTemplate
 from app.services.embedding_service import EmbeddingService
 
 
+from app.database import SessionLocal, ConversationHistory
+from sqlalchemy.orm import Session
+
 class RAGService:
     def __init__(self):
         self.embedding_service = EmbeddingService()
         self.llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0)
-        self.retriever = self.embedding_service.vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 5})
-        self.conversation_history = {}  # Add this line
+        self.retriever = self.embedding_service.vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 10})
 
-    def get_history(self, user_id: str):
-        return self.conversation_history.get(user_id, [])
+    def add_to_history(self, db: Session, user_id: str, question: str, answer: str):
+        db_item = ConversationHistory(user_id=user_id, question=question, answer=answer)
+        db.add(db_item)
+        db.commit()
+        db.refresh(db_item)
 
-    def add_to_history(self, user_id: str, question: str, answer: str):
-        if user_id not in self.conversation_history:
-            self.conversation_history[user_id] = []
-        self.conversation_history[user_id].append({"question": question, "answer": answer})
-        # Keep only the last 5 exchanges
-        self.conversation_history[user_id] = self.conversation_history[user_id][-5:]
+    def get_history(self, db: Session, user_id: str, limit: int = 5):
+        return db.query(ConversationHistory).filter(ConversationHistory.user_id == user_id).order_by(ConversationHistory.timestamp.desc()).limit(limit).all()
 
-    def get_response(self, user_id: str, question: str):
-        history = self.get_history(user_id)
+    def get_response(self, db: Session, user_id: str, question: str):
+        history = self.get_history(db, user_id)
+        print("history : ",history)
         
         system_prompt = (
             "You are an assistant for question-answering tasks. "
@@ -46,7 +48,7 @@ class RAGService:
         question_answer_chain = create_stuff_documents_chain(self.llm, prompt)
         rag_chain = create_retrieval_chain(self.retriever, question_answer_chain)
         
-        history_text = "\n".join([f"Q: {h['question']}\nA: {h['answer']}" for h in history])
+        history_text = "\n".join([f"Q: {h.question}\nA: {h.answer}" for h in history])
         
         response = rag_chain.invoke({
             "input": question,
@@ -54,6 +56,7 @@ class RAGService:
         })
         
         answer = response["answer"]
-        self.add_to_history(user_id, question, answer)
+        self.add_to_history(db, user_id, question, answer)
         
         return answer
+

@@ -19,8 +19,10 @@ class EmbeddingService:
         if user_id not in self.conversation_history:
             self.conversation_history[user_id] = []
         self.conversation_history[user_id].append({"question": question, "answer": answer})
+        # print("history : ",self.conversation_history)
         # Keep only the last 5 exchanges
         self.conversation_history[user_id] = self.conversation_history[user_id][-5:]
+        # print(" last 5 history : ",self.conversation_history)
 
     def get_history(self, user_id: str):
         return self.conversation_history.get(user_id, [])    
@@ -90,3 +92,4 @@ class EmbeddingService:
         self.vectorstore.delete(ids=results['ids'])
 
         return {"message": f"Deleted {len(results['ids'])} embeddings"}
+    

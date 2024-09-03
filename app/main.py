@@ -1,8 +1,13 @@
 from fastapi import FastAPI, Depends, HTTPException
+from requests import Session
 from app.models import EmbeddingRequest, QuestionRequest, DeleteEmbeddingRequest
 from app.services.embedding_service import EmbeddingService
 from app.services.rag_service import RAGService
-from app.utils.auth import get_api_key
+# from app.utils.auth import get_api_key
+from app.database import get_db, engine, Base
+
+Base.metadata.create_all(bind=engine)
+
 
 app = FastAPI()
 
@@ -23,9 +28,10 @@ async def create_embeddings(request: EmbeddingRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/get_response")
-async def get_response(request: QuestionRequest):
+async def get_response(request: QuestionRequest, db: Session = Depends(get_db)):
     try:
         response = rag_service.get_response(
+            db,
             request.userId,
             request.question
         )
