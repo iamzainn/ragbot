@@ -23,7 +23,8 @@ class EmbeddingService:
         # Keep only the last 5 exchanges
         self.conversation_history[user_id] = self.conversation_history[user_id][-5:]
         # print(" last 5 history : ",self.conversation_history)
-
+        
+    
     def get_history(self, user_id: str):
         return self.conversation_history.get(user_id, [])    
 
@@ -93,3 +94,12 @@ class EmbeddingService:
 
         return {"message": f"Deleted {len(results['ids'])} embeddings"}
     
+    # def get_embedding(self, text):
+    # # Assuming you're using a Gemini model for embeddings
+    #    response = self.genai_embed.embed_content(
+    #        model=self.embed_model,
+    #        content=text,
+    #        task_type="retrieval_document",
+    #        title="Single text embedding"
+    #    )
+    #    return response['embedding']

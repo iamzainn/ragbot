@@ -33,10 +33,12 @@ async def get_response(request: QuestionRequest, db: Session = Depends(get_db)):
         response = rag_service.get_response(
             db,
             request.userId,
+            request.documentId,
             request.question
         )
         return {"response": response}
     except Exception as e:
+        print(f"Error in get_response: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/delete_embeddings")

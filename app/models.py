@@ -8,8 +8,8 @@ class EmbeddingRequest(BaseModel):
 
 class QuestionRequest(BaseModel):
     userId: str
+    documentId: str
     question: str
-    
 
 class DeleteEmbeddingRequest(BaseModel):
     userId: str

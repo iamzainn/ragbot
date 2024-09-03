@@ -1,6 +1,9 @@
-from sqlalchemy import create_engine
+from sqlalchemy import Index, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, Integer, String, Text, DateTime
+
+from datetime import datetime
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./rag_chatbot.db"
 
@@ -21,14 +24,16 @@ def get_db():
 
 
 
-from sqlalchemy import Column, Integer, String, Text, DateTime
-from datetime import datetime
-
 class ConversationHistory(Base):
     __tablename__ = "conversation_history"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(String, index=True)
+    document_id = Column(String, index=True)
     question = Column(Text)
     answer = Column(Text)
     timestamp = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        Index('idx_user_document', user_id, document_id),
+    )
